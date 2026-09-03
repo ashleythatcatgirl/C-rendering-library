@@ -4,6 +4,22 @@
 
 #include "GLFW/glfw3.h"
 
-void processKeyInput(GLFWwindow *window, const float deltaTime);
+#include <stdbool.h>
+
+struct Window;
+struct WindowUserPointer;
+struct Camera;
+struct Mouse {
+	double lastX;
+	double lastY;
+
+	float sensitivity;
+	bool firstMouse;
+};
+
+void processKeyInput(struct Window *window, struct Camera *camera);
+void toggleCursorMode(struct Window *window);
+
+static inline bool isKeyPressed(GLFWwindow *frame, int key);
 
 #endif

@@ -1,63 +1,84 @@
 
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include <stdio.h>
-#include "window.h"
 
-GLFWwindow* createWindow(const int windowWidth, const int windowHeight, const char *windowName) {
+#include <stdio.h>
+
+#include "window.h"
+#include "camera.h"
+#include "controls.h"
+
+GLFWwindow *createWindow(const int windowWidth, const int windowHeight, const char *windowName, struct WindowUserPointer *windowUserPointer) {
 	glfwInit();
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow *window = glfwCreateWindow(windowWidth, windowHeight, windowName, NULL, NULL);
-	if (window == NULL) {
+	GLFWwindow *frame = glfwCreateWindow(windowWidth, windowHeight, windowName, NULL, NULL);
+	if (frame == NULL) {
 		printf("Failed to create window\n");
 		return NULL;
 	}
 
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);  
+	glfwSetWindowUserPointer(frame, (void*)windowUserPointer);
+
+	glfwMakeContextCurrent(frame);
+	glfwSetFramebufferSizeCallback(frame, framebuffer_size_callback);  
+	glfwSetCursorPosCallback(frame, mouse_callback);
+	glfwSetScrollCallback(frame, scroll_callback);
+
+	glfwSetInputMode(frame, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress)) {
 		printf("Failed to load GLAD\n");
 		return NULL;
 	}
 
-	return window;
+	return frame;
 }
 
-void framebuffer_size_callback(GLFWwindow *window, const int width, const int height) {
+void framebuffer_size_callback(GLFWwindow *frame, const int width, const int height) {
 	glViewport(0, 0, width, height);
 } 
 
-/*
-void mouse_callback(GLFWwindow* window, double xPos, double yPos) {
-	Controls *controls = glfwGetWindowUserPointer(window);
-	if (controls->mouse->firstMouse) {
-		controls->mouse->lastX = xPos;
-		controls->mouse->lastY = yPos;
+void mouse_callback(GLFWwindow* frame, double xPos, double yPos) {
+	if (glfwGetInputMode(frame, GLFW_CURSOR) == GLFW_CURSOR_NORMAL)
+		return;
 
-		controls->mouse->firstMouse = false;
+	struct WindowUserPointer *windowPtr = glfwGetWindowUserPointer(frame);
+	struct Mouse *mouse = windowPtr->mouse;
+	struct Camera *camera = windowPtr->camera;
+
+	if (mouse->firstMouse) {
+		mouse->lastX = xPos;
+		mouse->lastY = yPos;
+
+		mouse->firstMouse = false;
 	}
 
-	float xOffset = xPos - controls->mouse->lastX;
-	float yOffset = controls->mouse->lastY - yPos;
-	xOffset *= 0.005;
-	yOffset *= 0.005;
+	float xOffset = xPos - mouse->lastX;
+	float yOffset = mouse->lastY - yPos;
+	xOffset *= mouse->sensitivity;
+	yOffset *= mouse->sensitivity;
 
-	controls->mouse->lastX = xPos;
-	controls->mouse->lastY = yPos;
-	
-	CameraYaw(controls->camera, xOffset, window);
-	CameraPitch(controls->camera, yOffset, window);
+	mouse->lastX = xPos;
+	mouse->lastY = yPos;
+
+	cameraTurnYaw(camera, xOffset);
+	cameraTurnPitch(camera, yOffset);
 }
 
-void scroll_callback(GLFWwindow *window, double xOffset, double yOffset) {
-	Controls *controls = glfwGetWindowUserPointer(window);
+void scroll_callback(GLFWwindow *frame, double xOffset, double yOffset) {
+	struct WindowUserPointer *windowPtr = glfwGetWindowUserPointer(frame);
+	struct Camera *camera = windowPtr->camera;
 
-	CameraZoom(controls->camera, 2*yOffset);
+	cameraZoom(camera, 2 * yOffset);
 }
-*/
 
+void updateDeltaTime(struct Window *window) {
+	window->currentFrame = glfwGetTime();
+	window->deltaTime = window->currentFrame - window->lastFrame;
+	window->lastFrame = window->currentFrame;
+
+}

@@ -1,24 +1,18 @@
 
 #include "../include/glad.c"
+#include "camera.h"
 #include "glad/glad.h"
 #include "GLFW/glfw3.h"
-#include "../include/cglm/cglm.h"
+
+#include <stdio.h>
+#include <stdlib.h>
 
 #include "window.h"
 #include "controls.h"
 #include "shader.h"
-
-float verticies[] = {
-	-0.5, -0.5, 0.5,
-	0.5, -0.5, 0.5,
-	-0.5, 0.5, 0.5,
-	0.5, 0.5, 0.5,
-
-	-0.5, -0.5, -0.5,
-	0.5, -0.5, -0.5,
-	-0.5, 0.5, -0.5,
-	0.5, 0.5, -0.5
-};
+#include "render.h"
+#include "model.h"
+#include "physics.h"
 
 unsigned int indices[] = {
 	0, 1, 2,
@@ -38,86 +32,102 @@ unsigned int indices[] = {
 };
 
 int main()  {
-	GLFWwindow *window = NULL;
-	unsigned int shaderProgram;
+	struct Window window;
 
- 	window = createWindow(860, 540, "Rendering_library");
+	window.width = 1280;
+	window.height = 720;
+ 	window.frame = createWindow(window.width, window.height, "Rendering_library", &window.userPtr);
 
-	unsigned int VAO, VBO, EBO;
-	glGenVertexArrays(1, &VAO);
-	glGenBuffers(1, &VBO);
-	glGenBuffers(1, &EBO);
+	struct Scene scene;
+	scene.modelCount = 1;
+	scene.models = malloc(sizeof(struct Model) * scene.modelCount);
 
-	glBindVertexArray(VAO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, sizeof(verticies), verticies, GL_STATIC_DRAW);
+	struct Model model;
+	scene.models = &model;
+	model.instanceCount = 4;
+	model.instances = malloc(sizeof(struct ModelInstance) * model.instanceCount);
 
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, EBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER, sizeof(indices), indices, GL_STATIC_DRAW);
+	model.vertexCount = 8;
+	model.verticies = generateCube(1.0);
 
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3 * sizeof(float), (void*)0);
-	glEnableVertexAttribArray(0);
+	model.indiceCount = sizeof(indices) / sizeof(unsigned int);
+	model.indices = malloc(sizeof(unsigned int) * model.indiceCount);
 
-	mat4 model, view, projection;
+	for (unsigned int i = 0; i < model.indiceCount; i++)
+		model.indices[i] = indices[i];
 
-	vec3 cameraPos, cameraTarget, cameraUp, cameraFront;
+	generateModelArrays(&model);
 
-	glm_vec3_copy((vec3){0.0, 3.0, 5.0}, cameraPos);
-	glm_vec3_copy((vec3){0.0, -0.6, -1.0}, cameraFront);
-	glm_normalize(cameraFront);
+	model.shader = createShaderProgram("../src/shaders/vertex.glsl", NULL, "../src/shaders/fragment.glsl");
 
-	/*
-	glm_vec3_sub(cameraPos, cameraTarget, cameraDir);
-	glm_normalize(cameraDir);
+	model.instances[0].rotationScale = 0.0;
+	model.instances[1].rotationScale = 0.0;
+	model.instances[2].rotationScale = 0.0;
 
-	vec3 up;
-	glm_vec3_copy((vec3){0.0, 1.0, 0.0}, up);
-	glm_cross(up, cameraDir, cameraRight);
-	glm_normalize(cameraRight);
+	glm_vec3_copy((vec3){0.0, 0.0, 0.0}, model.instances[0].position);
+	glm_vec3_copy((vec3){0.0, 1.0, 0.2}, model.instances[0].rotation);
+	glm_vec3_copy((vec3){10.0, 10.0, 10.0}, model.instances[0].scale);
 
-	glm_cross(cameraDir, cameraRight, cameraUp);
-	*/
+	glm_vec3_copy((vec3){50.0, 0.0, 0.0}, model.instances[1].position);
+	glm_vec3_copy((vec3){0.0, 1.0, 0.2}, model.instances[1].rotation);
+	glm_vec3_copy((vec3){1.0, 1.0, 1.0}, model.instances[1].scale);
 
-	shaderProgram = createShaderProgram("../src/shaders/vertex.glsl", NULL, "../src/shaders/fragment.glsl");
+	glm_vec3_copy((vec3){25.0, 0.0, 0.0}, model.instances[2].position);
+	glm_vec3_copy((vec3){0.0, 1.0, 0.2}, model.instances[2].rotation);
+	glm_vec3_copy((vec3){0.5, 0.5, 0.5}, model.instances[2].scale);
 
-	float deltaTime = 0, lastFrame = 0, currentFrame = 0;
+	glm_vec3_copy((vec3){50.0, 0.0, 5.0}, model.instances[3].position);
+	glm_vec3_copy((vec3){0.0, 1.0, 0.2}, model.instances[3].rotation);
+	glm_vec3_copy((vec3){0.2, 0.2, 0.2}, model.instances[3].scale);
+
+	struct Camera camera;
+	initCamera(&camera, (vec3){0.0, 100.0, 0.0}, -90.0, -89.0, 90.0);
+	struct Mouse mouse;
+	mouse.sensitivity = 0.2;
+	mouse.firstMouse = true;
+	window.userPtr.camera = &camera;
+	window.userPtr.mouse = &mouse;
+
+	scene.camera = &camera;
+
+	struct Body *bodies;
+	int bodyCount = 4;
+	bodies = malloc(sizeof(struct Body) * bodyCount);
+
+	initBody(&bodies[0], (vec3){0.0, 0.0, 0.0}, (vec3){0.0, 0.0, 0.0}, 10000.0, 10.0);
+	initBody(&bodies[1], (vec3){50.0, 0.0, 0.0}, (vec3){0.0, 0.0, 15.0}, 100.0, 1.0);
+	initBody(&bodies[2], (vec3){25.0, 0.0, 0.0}, (vec3){0.0, 0.0, 20.0}, 10.0, 0.5);
+	initBody(&bodies[3], (vec3){50.0, 0.0, 5.0}, (vec3){4.0, 0.0, 15.0}, 5.0, 0.5);
+
+	float lastTime = glfwGetTime();
+	float targetFrameLength = 1.0 / 120.0;
 
 	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	glEnable(GL_DEPTH_TEST);
-	while(!glfwWindowShouldClose(window)) {	
+	glfwSwapInterval(0);
+	while(!glfwWindowShouldClose(window.frame)) {	
 		glClearColor(0.01, 0.0, 0.03, 1.0);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-		currentFrame = glfwGetTime();
-		deltaTime = currentFrame - lastFrame;
-		lastFrame = currentFrame;
+		updateDeltaTime(&window);
 
-		processKeyInput(window, deltaTime);
+		//printf("Fps: %f\n", 1.0 / window.deltaTime);
 
-		glUseProgram(shaderProgram);
+		processKeyInput(&window, &camera);
 
-		glm_mat4_identity(model);
-		glm_mat4_identity(view);
-		glm_mat4_identity(projection);
+		updatePlanets(bodies, bodyCount, window.deltaTime);
 
-		//glm_translate(model, (vec3){0.0, 0.0, 0.0});
-		glm_rotate(model, (float)glfwGetTime(), (vec3){0.0, 1.0, 0.0});
-		//glm_scale(model, (vec3){10.0, 10.0, 10.0});
-		
-		glm_vec3_add(cameraPos, cameraFront, cameraTarget);
-		glm_lookat(cameraPos, cameraTarget, (vec3){0.0, 1.0, 0.0}, view);
+		for (unsigned int i = 0; i < model.instanceCount; i++) {
+			glm_vec3_copy(bodies[i].position, model.instances[i].position);
+			model.instances[i].rotationScale = glfwGetTime() * (1.0 / bodies[i].radius);
+		}
 
-		glm_perspective(glm_rad(90.0), 860.0/540.0, 0.1, 100.0, projection);
+		renderScene(&scene, &window);
+	
+		while (glfwGetTime() < lastTime + targetFrameLength) {}
+		lastTime += targetFrameLength;
 
-		shaderSetMat4(shaderProgram, "model", GL_FALSE, (float*)model);
-		shaderSetMat4(shaderProgram, "view", GL_FALSE, (float*)view);
-		shaderSetMat4(shaderProgram, "projection", GL_FALSE, (float*)projection);
-
-		glBindVertexArray(VAO);
-		glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
-		glBindVertexArray(0);
-
-		glfwSwapBuffers(window);
+		glfwSwapBuffers(window.frame);
 		glfwPollEvents();
 	}
 

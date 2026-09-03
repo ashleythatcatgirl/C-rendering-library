@@ -1,5 +1,4 @@
 
-#include "../include/cglm/cglm.h"
 #include "glad/glad.h"
 
 #include <stdlib.h>
@@ -35,8 +34,7 @@ void loadShader(const unsigned int shaderProgram, const char *shaderPath, const 
 		glGetShaderInfoLog(shader, 1024, NULL, infoLog);
 		printf("Shader compilation error\nError log\n%s\nEnd\n", infoLog);
 
-		freeShader(shaderContent, shader);
-		return;
+		goto freeShaderMemory;
 	}
 
 	glAttachShader(shaderProgram, shader);
@@ -48,9 +46,10 @@ void loadShader(const unsigned int shaderProgram, const char *shaderPath, const 
         	glGetProgramInfoLog(shaderProgram, 1024, NULL, infoLog);
         	printf("Shader linking error\nError log\n%s\nEnd\n", infoLog);
 
-		freeShader(shaderContent, shader);
-		return;
+		goto freeShaderMemory;
     	}
+
+freeShaderMemory:
 
 	freeShader(shaderContent, shader);
 }
@@ -58,7 +57,7 @@ void loadShader(const unsigned int shaderProgram, const char *shaderPath, const 
 char* getShaderContent(const char *shaderFileName) {
 	char buffer = 0;
 	char* shaderContent = 0;
-	unsigned int size = 1024;
+	int size = 1024;
 
 	shaderContent = (char*)malloc(sizeof(char) * size);
 	if (shaderContent == NULL) return 0;
