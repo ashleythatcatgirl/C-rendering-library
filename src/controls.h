@@ -19,7 +19,13 @@ struct Mouse {
 
 void processKeyInput(struct Window *window, struct Camera *camera);
 void toggleCursorMode(struct Window *window);
+void initMouse(struct Mouse *mouse, const float sensitivity);
 
-static inline bool isKeyPressed(GLFWwindow *frame, int key);
+static inline bool isKeyPressed(GLFWwindow *frame, int key) {
+	return glfwGetKey(frame, key) == GLFW_PRESS;
+}
+
+
+
 
 #endif

@@ -4,8 +4,8 @@
 #include "render.h"
 #include "model.h"
 #include "shader.h"
-#include "camera.h"
 #include "window.h"
+#include "camera.h"
 
 void renderScene(struct Scene *scene, struct Window *window) {
 	glm_mat4_identity(scene->view);
@@ -14,9 +14,9 @@ void renderScene(struct Scene *scene, struct Window *window) {
 	glm_vec3_add(scene->camera->position, scene->camera->front, scene->camera->target);
 	glm_lookat(scene->camera->position, scene->camera->target, scene->camera->up, scene->view);
 
-	glm_perspective(glm_rad(scene->camera->fov), window->width/window->height, 0.1, 1000.0, scene->projection);
+	glm_perspective(glm_rad(scene->camera->fov), window->width/window->height, scene->camera->nearPlane, scene->camera->farPlane, scene->projection);
 
-	for (unsigned int i = 0; i < scene->modelCount; i++)
+	for (uint i = 0; i < scene->modelCount; i++)
 		renderModel(&scene->models[i], scene->view, scene->projection);
 }
 
@@ -28,13 +28,13 @@ void renderModel(struct Model *model, mat4 viewMat, mat4 projectionMat) {
 
 	glBindVertexArray(model->VAO);
 
-	for (unsigned int i = 0; i < model->instanceCount; i++)
-		renderModelInstance(&model->instances[i], model->shader);
+	for (uint i = 0; i < model->instanceCount; i++)
+		renderModelInstance(&model->instances[i], model->shader, model->indiceCount);
 
 	glBindVertexArray(0);
 }
 
-void renderModelInstance(struct ModelInstance *instance, unsigned int shaderProgram) {
+void renderModelInstance(struct ModelInstance *instance, uint shaderProgram, uint indiceCount) {
 	glm_mat4_identity(instance->model);
 
 	glm_translate(instance->model, instance->position);
@@ -43,5 +43,5 @@ void renderModelInstance(struct ModelInstance *instance, unsigned int shaderProg
 		
 	shaderSetMat4(shaderProgram, "model", GL_FALSE, (float*)instance->model);
 
-	glDrawElements(GL_TRIANGLES, 36, GL_UNSIGNED_INT, 0);
+	glDrawElements(GL_TRIANGLES, indiceCount, GL_UNSIGNED_INT, 0);
 }

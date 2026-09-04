@@ -7,8 +7,8 @@
 #include "shader.h"
 #include "helper.h"
 
-unsigned int createShaderProgram(const char *vertexShaderPath, const char *geometryShaderPath, const char *fragmentShaderPath) {
-	unsigned int shaderProgram = glCreateProgram();
+uint createShaderProgram(const char *vertexShaderPath, const char *geometryShaderPath, const char *fragmentShaderPath) {
+	uint shaderProgram = glCreateProgram();
 
 	if (vertexShaderPath) loadShader(shaderProgram, vertexShaderPath, GL_VERTEX_SHADER);
 	if (geometryShaderPath) loadShader(shaderProgram, geometryShaderPath, GL_GEOMETRY_SHADER);
@@ -17,8 +17,8 @@ unsigned int createShaderProgram(const char *vertexShaderPath, const char *geome
 	return shaderProgram;
 }
 
-void loadShader(const unsigned int shaderProgram, const char *shaderPath, const int shaderType) {
-	unsigned int shader;
+void loadShader(const uint shaderProgram, const char *shaderPath, const int shaderType) {
+	uint shader;
 	int success;
 
 	const char *shaderContent = getShaderContent(shaderPath);
@@ -54,43 +54,47 @@ freeShaderMemory:
 	freeShader(shaderContent, shader);
 }
 
-char* getShaderContent(const char *shaderFileName) {
-	char buffer = 0;
-	char* shaderContent = 0;
-	int size = 1024;
-
-	shaderContent = (char*)malloc(sizeof(char) * size);
-	if (shaderContent == NULL) return 0;
-
+char *getShaderContent(const char *shaderFileName) {
 	FILE *fPtr = fopen(shaderFileName, "r");
-	if (fPtr == NULL) {
-		free(shaderContent);
-		return 0;
-	}
+	if (!fPtr)
+		return NULL;
 
-	int i = 0;
-	for (; (buffer = fgetc(fPtr)) != EOF; i++) {
-		if (i >= size) {
-			size *= 2;
-			shaderContent = (char*)resizeArray(shaderContent, sizeof(char) * size);
-		}
-		
-		shaderContent[i] = buffer;
-	}
-
-	shaderContent[i] = '\0';
+	char *shaderContent = readFileToArray(fPtr);
 
 	fclose(fPtr);
 
 	return shaderContent;
 }
 
-void freeShader(const char *shaderSource, unsigned int shader) {
+char *readFileToArray(FILE *fPtr) {
+	int size = 1024;
+	char *array = malloc(sizeof(char) * size);
+	if (!array)
+		return NULL;
+
+	char buffer = 0;
+	int i = 0;
+	for (; (buffer = fgetc(fPtr)) != EOF; i++) {
+		if (i >= size) {
+			size *= 2;
+			array = (char*)resizeArray(array, sizeof(char) * size);
+		}
+		
+		array[i] = buffer;
+	}
+
+	array[i] = '\0';
+
+	return array;
+}
+
+
+void freeShader(const char *shaderSource, uint shader) {
 	free((char*)shaderSource);
 	glDeleteShader(shader);
 }
 
-void shaderSetMat4(unsigned int shaderProgram, const char *name, int gl_bool, float *data) {	
+void shaderSetMat4(uint shaderProgram, const char *name, int gl_bool, float *data) {	
 	int location = glGetUniformLocation(shaderProgram, name);
 	glUniformMatrix4fv(location, 1, gl_bool, data);
 }

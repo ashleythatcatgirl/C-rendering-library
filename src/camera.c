@@ -1,7 +1,6 @@
 
 #include "camera.h"
 #include "controls.h"
-#include <stdio.h>
 
 void cameraMoveX(struct Camera *camera, float moveSpeed) {
 	vec3 move;
@@ -61,7 +60,7 @@ void cameraZoom(struct Camera *camera, float zoomSpeed) {
 	camera->fov -= zoomSpeed;
 }
 
-void initCamera(struct Camera *camera, vec3 position, float yaw, float pitch, float fov) {
+void initCamera(struct Camera *camera, vec3 position, float yaw, float pitch, float fov, float nearPlane, float farPlane) {
 	glm_vec3_copy(position, camera->position);
 	glm_vec3_copy((vec3){0.0, 1.0, 0.0}, camera->up);
 
@@ -70,6 +69,9 @@ void initCamera(struct Camera *camera, vec3 position, float yaw, float pitch, fl
 	camera->roll = 0.0;
 
 	camera->fov = fov;
+
+	camera->nearPlane = 0.1;
+	camera->farPlane = 1000.0;
 
 	glm_vec3_copy((vec3){
 		cos(glm_rad(camera->yaw)) * cos(glm_rad(camera->pitch)),

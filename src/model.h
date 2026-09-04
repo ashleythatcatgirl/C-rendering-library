@@ -24,15 +24,15 @@ struct Model {
 	
 	int shader;
 
-	unsigned int VAO;
-	unsigned int VBO;
-	unsigned int EBO;
+	uint VAO;
+	uint VBO;
+	uint EBO;
 
 	struct Vertex *verticies;
-	unsigned int *indices;
+	uint *indices;
 
-	unsigned int vertexCount;
-	unsigned int indiceCount;
+	uint vertexCount;
+	uint indiceCount;
 };
 
 struct Scene {
@@ -45,7 +45,18 @@ struct Scene {
 	mat4 projection;
 };
 
+void initScene(struct Scene *scene, int modelCount);
+void initModel(struct Model *model, int instanceCount);
+void initInstance(struct ModelInstance *instance, vec3 position, vec3 rotation, vec3 scale, float rotationScale);
+
 void generateModelArrays(struct Model *model);
-struct Vertex *generateCube(float scale);
+
+void generateCube(struct Model *model, float scale);
+struct Vertex *generateCubeVerticies(float scale);
+uint *generateCubeIndices(void);
+
+void generateSphere(struct Model *model, int verticalSlices, int horizontalSlices);
+
+void floatToVec3(float a, vec3 dest);
 
 #endif

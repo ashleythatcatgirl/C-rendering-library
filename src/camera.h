@@ -17,9 +17,12 @@ struct Camera {
 	float roll;
 
 	float fov;
+
+	float nearPlane;
+	float farPlane;
 };
 
-void initCamera(struct Camera *camera, vec3 position, float yaw, float pitch, float fov);
+void initCamera(struct Camera *camera, vec3 position, float yaw, float pitch, float fov, float nearPlane, float farPlane);
 void cameraMoveX(struct Camera *camera, float moveSpeed);
 void cameraMoveY(struct Camera *camera, float moveSpeed);
 void cameraMoveZ(struct Camera *camera, float moveSpeed);

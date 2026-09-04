@@ -8,20 +8,30 @@
 #include "camera.h"
 #include "controls.h"
 
-GLFWwindow *createWindow(const int windowWidth, const int windowHeight, const char *windowName, struct WindowUserPointer *windowUserPointer) {
+void initWindow(struct Window *window, const int width, const int height, const char *name, const float fps) {
+	window->width = width;
+	window->height = height;
+	window->name = name;
+	window->targetFps = fps;
+	window->targetFrameLength = 1.0 / fps;
+
+	window->frame = createWindow(window->width, window->height, window->name, &window->userPtr);
+}
+
+GLFWwindow *createWindow(const int width, const int height, const char *name, struct WindowUserPointer *userPointer) {
 	glfwInit();
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 5);
 	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 
-	GLFWwindow *frame = glfwCreateWindow(windowWidth, windowHeight, windowName, NULL, NULL);
+	GLFWwindow *frame = glfwCreateWindow(width, height, name, NULL, NULL);
 	if (frame == NULL) {
 		printf("Failed to create window\n");
 		return NULL;
 	}
 
-	glfwSetWindowUserPointer(frame, (void*)windowUserPointer);
+	glfwSetWindowUserPointer(frame, (void*)userPointer);
 
 	glfwMakeContextCurrent(frame);
 	glfwSetFramebufferSizeCallback(frame, framebuffer_size_callback);  

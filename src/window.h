@@ -23,10 +23,14 @@ struct Window {
 	float lastFrame;
 	float deltaTime;
 
+	float targetFps;
+	float targetFrameLength;
+
 	float tabDelay;
 };
 
-GLFWwindow *createWindow(const int windowWidth, const int windowHeight, const char *windowName, struct WindowUserPointer *windowUserPointer);
+void initWindow(struct Window *window, const int width, const int height, const char *name, const float fps);
+GLFWwindow *createWindow(const int height, const int width, const char *name, struct WindowUserPointer *userPointer);
 void framebuffer_size_callback(GLFWwindow *frame, int width, int height);
 void mouse_callback(GLFWwindow *frame, double xPos, double yPos);
 void scroll_callback(GLFWwindow *frame, double xOffset, double yOffset);

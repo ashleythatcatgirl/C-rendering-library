@@ -13,14 +13,15 @@ void processKeyInput(struct Window *window, struct Camera *camera) {
 	if(isKeyPressed(frame, GLFW_KEY_ESCAPE))
 		glfwSetWindowShouldClose(frame, 1);
 
-	if(glfwGetKey(frame, GLFW_KEY_TAB) == GLFW_PRESS && window->tabDelay < glfwGetTime())
+	if(isKeyPressed(frame, GLFW_KEY_TAB) && window->tabDelay < glfwGetTime())
 		toggleCursorMode(window);
 
 	float moveSpeed = 5.0 * window->deltaTime;
 	float turnSpeed = 75.0 * window->deltaTime;
 	float zoomSpeed = 50.0 * window->deltaTime;
 
-	if(isKeyPressed(frame, GLFW_KEY_LEFT_SHIFT)) moveSpeed *= 5.0;
+	if(isKeyPressed(frame, GLFW_KEY_LEFT_SHIFT))
+		moveSpeed *= 5.0;
 
 	if(isKeyPressed(frame, GLFW_KEY_W))
 		cameraMoveZ(camera,  moveSpeed);
@@ -49,10 +50,6 @@ void processKeyInput(struct Window *window, struct Camera *camera) {
 		cameraZoom(camera, -zoomSpeed);
 }
 
-bool isKeyPressed(GLFWwindow *frame, int key) {
-	return glfwGetKey(frame, key) == GLFW_PRESS;
-}
-
 void toggleCursorMode(struct Window *window) {
 	window->tabDelay = glfwGetTime() + 0.1;
 	glfwSetInputMode(window->frame, GLFW_CURSOR,
@@ -66,3 +63,9 @@ void toggleCursorMode(struct Window *window) {
 	struct WindowUserPointer *windowPtr = glfwGetWindowUserPointer(window->frame);
 	windowPtr->mouse->firstMouse = true;
 }
+
+void initMouse(struct Mouse *mouse, const float sensitivity) {
+	mouse->firstMouse = true;
+	mouse->sensitivity = sensitivity;
+}
+
