@@ -18,10 +18,10 @@ void initWindow(struct Window *window, const int width, const int height, const 
 	window->targetFps = fps;
 	window->targetFrameLength = 1.0 / fps;
 
-	window->frame = createWindow(window->width, window->height, window->name, &window->userPtr);
+	window->frame = createWindow(window->width, window->height, window->name, (void*)&window->userPtr);
 }
 
-GLFWwindow *createWindow(const int width, const int height, const char *name, struct WindowUserPointer *userPointer) {
+GLFWwindow *createWindow(const int width, const int height, const char *name, void *userPointer) {
 	glfwInit();
 	glfwWindowHint(GLFW_SAMPLES, 4);
 	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 4);
@@ -34,7 +34,7 @@ GLFWwindow *createWindow(const int width, const int height, const char *name, st
 		return NULL;
 	}
 
-	glfwSetWindowUserPointer(frame, (void*)userPointer);
+	glfwSetWindowUserPointer(frame, userPointer);
 
 	glfwMakeContextCurrent(frame);
 	glfwSetFramebufferSizeCallback(frame, framebuffer_size_callback);  
@@ -54,47 +54,6 @@ GLFWwindow *createWindow(const int width, const int height, const char *name, st
 void framebuffer_size_callback(GLFWwindow *frame, const int width, const int height) {
 	glViewport(0, 0, width, height);
 } 
-
-void mouse_callback(GLFWwindow* frame, double xPos, double yPos) {
-	if (glfwGetInputMode(frame, GLFW_CURSOR) == GLFW_CURSOR_NORMAL)
-		return;
-
-	struct WindowUserPointer *windowPtr = glfwGetWindowUserPointer(frame);
-	struct Mouse *mouse = windowPtr->mouse;
-	struct Camera *camera = windowPtr->camera;
-
-	if (mouse->firstMouse) {
-		mouse->lastX = xPos;
-		mouse->lastY = yPos;
-
-		mouse->firstMouse = false;
-	}
-
-	float xOffset = xPos - mouse->lastX;
-	float yOffset = mouse->lastY - yPos;
-	xOffset *= mouse->sensitivity;
-	yOffset *= mouse->sensitivity;
-
-	mouse->lastX = xPos;
-	mouse->lastY = yPos;
-
-	cameraTurnYaw(camera, xOffset);
-	cameraTurnPitch(camera, yOffset);
-}
-
-void scroll_callback(GLFWwindow *frame, double xOffset, double yOffset) {
-	struct WindowUserPointer *windowPtr = glfwGetWindowUserPointer(frame);
-	struct Camera *camera = windowPtr->camera;
-
-	cameraZoom(camera, 2 * yOffset);
-}
-
-void updateDeltaTime(struct Window *window) {
-	window->currentFrame = glfwGetTime();
-	window->deltaTime = window->currentFrame - window->lastFrame;
-	window->lastFrame = window->currentFrame;
-
-}
 
 // SHADER_C
 
@@ -189,17 +148,11 @@ void freeShader(const char *shaderSource, uint shader) {
 	glDeleteShader(shader);
 }
 
-void shaderSetMat4(uint shaderProgram, const char *name, int gl_bool, float *data) {	
-	int location = glGetUniformLocation(shaderProgram, name);
-	glUniformMatrix4fv(location, 1, gl_bool, data);
-}
-
 // RENDER_C
 
 void renderScene(struct Scene *scene, struct Window *window) {
 	glm_mat4_identity(scene->view);
 	glm_mat4_identity(scene->projection);
-
 
 	glm_vec3_add(scene->camera->position, scene->camera->front, scene->camera->target);
 	glm_lookat(scene->camera->position, scene->camera->target, scene->camera->up, scene->view);
@@ -213,8 +166,8 @@ void renderScene(struct Scene *scene, struct Window *window) {
 void renderModel(struct Model *model, mat4 viewMat, mat4 projectionMat) {
 	glUseProgram(model->shader);
 
-	shaderSetMat4(model->shader, "view", GL_FALSE, (float*)viewMat);
-	shaderSetMat4(model->shader, "projection", GL_FALSE, (float*)projectionMat);
+	shaderSetMat4(model->shader, "view", GL_FALSE, viewMat);
+	shaderSetMat4(model->shader, "projection", GL_FALSE, projectionMat);
 
 	glBindVertexArray(model->VAO);
 
@@ -231,7 +184,7 @@ void renderModelInstance(struct ModelInstance *instance, uint shaderProgram, uin
 	glm_rotate(instance->model, instance->rotationScale, instance->rotation);
 	glm_scale(instance->model, instance->scale);
 		
-	shaderSetMat4(shaderProgram, "model", GL_FALSE, (float*)instance->model);
+	shaderSetMat4(shaderProgram, "model", GL_FALSE, instance->model);
 
 	glDrawElements(GL_TRIANGLES, indiceCount, GL_UNSIGNED_INT, 0);
 }

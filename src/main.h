@@ -1,8 +1,16 @@
 
+#ifndef MAIN_H
+#define MAIN_H
+
+#include <glad/glad.h>
+#include "GLFW/glfw3.h"
+#include "../include/cglm/cglm.h"
+
+#include "stdlib.h"
+#include "stdio.h"
+
 #ifndef WINDOW_H
 #define WINDOW_H
-
-#include "GLFW/glfw3.h"
 
 struct Camera;
 struct Mouse;
@@ -19,9 +27,9 @@ struct Window {
 
 	struct WindowUserPointer userPtr;
 
-	float currentFrame;
-	float lastFrame;
-	float deltaTime;
+	double currentFrame;
+	double lastFrame;
+	double deltaTime;
 
 	float targetFps;
 	float targetFrameLength;
@@ -30,20 +38,25 @@ struct Window {
 };
 
 void initWindow(struct Window *window, const int width, const int height, const char *name, const float fps);
-GLFWwindow *createWindow(const int height, const int width, const char *name, struct WindowUserPointer *userPointer);
+GLFWwindow *createWindow(const int height, const int width, const char *name, void *userPointer);
 void framebuffer_size_callback(GLFWwindow *frame, int width, int height);
 void mouse_callback(GLFWwindow *frame, double xPos, double yPos);
 void scroll_callback(GLFWwindow *frame, double xOffset, double yOffset);
 
-void updateDeltaTime(struct Window *window);
+static void delayFrame(double lastFrame, float targetFrameLength) {
+	while (glfwGetTime() < lastFrame + targetFrameLength) {}
+}
+
+static void updateDeltaTime(double *currentFrame, double *lastFrame, double *deltaTime) {
+	*currentFrame = glfwGetTime();
+	*deltaTime = *currentFrame - *lastFrame;
+	*lastFrame = *currentFrame;
+}
 
 #endif // WINDOW_H
 
 #ifndef SHADER_H 
 #define SHADER_H
-
-#include "stdlib.h"
-#include "stdio.h"
 
 uint createShaderProgram(const char *vertexShaderPath, const char *geometryShaderPath, const char *fragmentShaderPath);
 void loadShader(const uint shaderProgram, const char *shaderPath, const int shaderType);
@@ -52,14 +65,35 @@ char *readFileToArray(FILE *fPtr);
 void *resizeArray(void *array, uint size);
 void freeShader(const char *shaderSource, uint shader);
 
-void shaderSetMat4(uint shaderProgram, const char *name, int gl_bool, float *data);
+static inline void shaderSetMat4(uint shaderProgram, const char *name, int gl_bool, mat4 data) {	
+	int location = glGetUniformLocation(shaderProgram, name);
+	glUniformMatrix4fv(location, 1, gl_bool, (float*)data);
+}
+static inline void shaderSetVec3(uint shaderProgram, const char *name, vec3 data) {
+	int location = glGetUniformLocation(shaderProgram, name);
+	glUniform3fv(location, 1, (float*)data);
+}
+static inline void shaderSetVec2(uint shaderProgram, const char *name, vec2 data) {
+	int location = glGetUniformLocation(shaderProgram, name);
+	glUniform2fv(location, 1, (float*)data);
+}
+static inline void shaderSetFloat(uint shaderProgram, const char *name, float data) {
+	int location = glGetUniformLocation(shaderProgram, name);
+	glUniform1f(location, data);
+}
+static inline void shaderSetInt(uint shaderProgram, const char *name, int data) {
+	int location = glGetUniformLocation(shaderProgram, name);
+	glUniform1i(location, data);
+}
+static inline void shaderSetUInt(uint shaderProgram, const char *name, uint data) {
+	int location = glGetUniformLocation(shaderProgram, name);
+	glUniform1ui(location, data);
+}
 
 #endif // SHADER_H
 
 #ifndef RENDER_H
 #define RENDER_H
-
-#include "../include/cglm/cglm.h"
 
 struct Scene;
 struct Model;
@@ -74,8 +108,6 @@ void renderModelInstance(struct ModelInstance *instance, uint shaderProgram, uin
 
 #ifndef MODEL_H
 #define MODEL_H
-
-#include "../include/cglm/cglm.h"
 
 struct Vertex {
 	vec3 position;
@@ -137,10 +169,6 @@ void floatToVec3(float a, vec3 dest);
 #ifndef CONTROLS_H
 #define CONTROLS_H
 
-#include "GLFW/glfw3.h"
-
-#include <stdbool.h>
-
 struct Window;
 struct WindowUserPointer;
 struct Camera;
@@ -164,9 +192,6 @@ static inline bool isKeyPressed(GLFWwindow *frame, int key) {
 
 #ifndef CAMERA_H
 #define CAMERA_H
-
-#include "GLFW/glfw3.h"
-#include "../include/cglm/cglm.h"
 
 struct Camera {
 	vec3 position;
@@ -195,3 +220,5 @@ void cameraTurnRoll(struct Camera *camera, float turnSpeed);
 void cameraZoom(struct Camera *camera, float zoomSpeed);
 
 #endif // CAMERA_H
+
+#endif // MAIN_H
