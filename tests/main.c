@@ -2,7 +2,7 @@
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 
-#include "../src/main.h"
+#include "../src/glib.h"
 
 void mouse_callback(GLFWwindow* frame, double xPos, double yPos) {
 	if (glfwGetInputMode(frame, GLFW_CURSOR) == GLFW_CURSOR_NORMAL)

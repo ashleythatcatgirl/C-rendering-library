@@ -7,7 +7,7 @@
 #include <math.h>
 #include <sys/types.h>
 
-#include "main.h"
+#include "glib.h"
 
 // WINDOW_C
 
