@@ -1,12 +1,13 @@
 
 <h1 align="center">A simple OpenGL rendering library in C</h1> 
 
-I made this library to learn and to use in other projects i wanna make
+I made this library mostly for learning and to use in other projects i wanna make
+Of course if you for whatever reason want to use it, go ahead lol
 
 
 ## Dependencies
 
-It's better to install these with your systems package manager
+It's advised to install these with your systems package manager
 
 - [openGL V4.5 or newer](https://www.opengl.org/)
 - [glad](https://github.com/Dav1dde/glad)
@@ -29,14 +30,12 @@ sudo cmake --install build
 
 ## Usage
 
-After installation include header with
-
+After installation include header with:
 `
 #include <GLib/src/glib.h>
 `
 
-And compile your program with
-
+And compile your program with:
 `
 gcc -lGLib
 `
