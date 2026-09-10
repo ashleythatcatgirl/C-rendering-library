@@ -1,7 +1,7 @@
 
 <h1 align="center">A simple OpenGL rendering library in C</h1> 
 
-I made this library mostly for learning and to use in other projects i wanna make
+I made this library mostly for learning and to use in other projects i wanna make\
 Of course if you for whatever reason want to use it, go ahead lol
 
 
