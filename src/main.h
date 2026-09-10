@@ -3,11 +3,11 @@
 #define MAIN_H
 
 #include <glad/glad.h>
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 #include "../include/cglm/cglm.h"
 
-#include "stdlib.h"
-#include "stdio.h"
+#include <stdlib.h>
+#include <stdio.h>
 
 #ifndef WINDOW_H
 #define WINDOW_H
