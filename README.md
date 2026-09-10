@@ -1,5 +1,5 @@
 
-# A simple OpenGL rendering library in C
+<h1 align="center">A simple OpenGL rendering library in C</h1> 
 
 I made this library to learn and to use in other projects i wanna make
 
@@ -26,6 +26,9 @@ cmake --build build
 sudo cmake --install build
 ```
 
+
+## Usage
+
 After installation include header with
 
 `
@@ -38,3 +41,7 @@ And compile your program with
 gcc -lGLib
 `
 
+
+## Documentation
+
+TBA
