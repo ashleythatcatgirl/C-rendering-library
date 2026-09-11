@@ -25,13 +25,19 @@ cd C-rendering-library
 ```
 
 Manual
+>It's necessary to copy cglm and stb_image from the include folder into your systems library directory\
+`/usr/local/include/` for UNIX systems
+
 ```
+cp -rp ./include/cglm/ /usr/local/include/
+cp -rp ./include/stb_image.h /usr/local/include/stb_image/
 cmake -B build
 cmake --build build
 sudo cmake --install build
 ```
 
-Build script (make sure to run in the root directory)
+Build script\
+> (make sure to run in the root directory)
 ```
 bash build.sh
 ```
