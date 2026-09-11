@@ -36,7 +36,7 @@ cmake --build build
 sudo cmake --install build
 ```
 
-Build script\
+Build script
 > (make sure to run in the root directory)
 ```
 bash build.sh
