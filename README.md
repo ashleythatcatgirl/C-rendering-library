@@ -22,9 +22,18 @@ It's advised to install these with your systems package manager
 ```
 git clone https://github.com/ashleythatcatgirl/C-rendering-library
 cd C-rendering-library
+```
+
+Manual
+```
 cmake -B build
 cmake --build build
 sudo cmake --install build
+```
+
+Build script (make sure to run in the root directory)
+```
+bash build.sh
 ```
 
 

@@ -4,7 +4,7 @@
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
-#include "../include/cglm/cglm.h"
+#include <cglm/cglm.h>
 
 #include <stdlib.h>
 #include <stdio.h>

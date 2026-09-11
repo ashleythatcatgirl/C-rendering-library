@@ -8,6 +8,7 @@ project(
 
 include(GNUInstallDirs)
 
+
 find_package(glfw3 3.5 REQUIRED)
 
 
@@ -35,26 +36,10 @@ target_link_libraries(GLib
 
 install(
 	TARGETS GLib
-	EXPORT GLibTargets
 	ARCHIVE DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	LIBRARY DESTINATION ${CMAKE_INSTALL_LIBDIR}
-	RUNTIME DESTINATION ${CMAKE_INSTALL_BINDIR}
-	FILE_SET HEADERS
-)
-
-install(
-	EXPORT GLibTargets
-	FILE GLibTargets.cmake
-	NAMESPACE GLib::
-	DESTINATION ${CMAKE_INSTALL_LIBDIR}/cmake/GLib
 )
 
 install(
 	FILES src/glib.h
-	DESTINATION include/Glib/src
-)
-
-install(
-	DIRECTORY include
 	DESTINATION include/Glib
 )
