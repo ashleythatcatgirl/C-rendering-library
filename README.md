@@ -26,7 +26,7 @@ cd C-rendering-library
 
 Manual
 >It's necessary to copy cglm and stb_image from the include folder into your systems library directory\
-`/usr/local/include/` for UNIX systems
+`/usr/local/include/` for linux systems
 
 ```
 cp -rp ./include/cglm/ /usr/local/include/
