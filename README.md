@@ -41,7 +41,7 @@ bash build.sh
 
 After installation include header with:
 `
-#include <GLib/src/glib.h>
+#include <GLib/glib.h>
 `
 
 And compile your program with:
